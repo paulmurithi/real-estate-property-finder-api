@@ -112,16 +112,17 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, "static/images/")
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), "propertyfinder")
 
-MEDIA_URL = os.path.join(BASE_DIR, "static/images/")
+
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "knox.auth.TokenAuthentication",
-    )
+    # "DEFAULT_AUTHENTICATION_CLASSES": (
+    #     "knox.auth.TokenAuthentication",
+    # )
 }
 
 CORS_ORIGIN_ALLOW_ALL = True

@@ -15,7 +15,7 @@ from django.contrib.auth.models import User
 
 class Agent(models.Model):
     name = models.CharField(max_length=150, unique=True, primary_key=True)
-    logo = models.FileField(upload_to="logos/")
+    logo = models.FileField(upload_to="logos")
 
     def __str__(self):
         return self.name
@@ -43,6 +43,13 @@ class House(models.Model):
     verified = models.BooleanField(default=False)
     for_sale = models.BooleanField(default=False)
     for_rent = models.BooleanField(default=False)
+    commercial = models.BooleanField(default=False)
+    town = models.CharField(max_length=100)
+    suburb = models.CharField(max_length=100)
+    price = models.DecimalField(
+        max_digits=11, decimal_places=2, help_text="price in KSH",
+        default =None
+    )
 
     def __str__(self):
         return self.house_no
@@ -57,6 +64,13 @@ class Land(models.Model):
     verified = models.BooleanField(default=False)
     for_sale = models.BooleanField()
     for_rent = models.BooleanField()
+    commercial = models.BooleanField(default=False)
+    town = models.CharField(max_length=100)
+    suburb = models.CharField(max_length=100)
+    price = models.DecimalField(
+        max_digits=11, decimal_places=2, help_text="price in KSH",
+         default =None
+    )
 
     def __str__(self):
         return self.plot_no
@@ -71,6 +85,10 @@ class Room(models.Model):
     suburb = models.CharField(max_length=20)
     room_type = models.CharField(max_length=10, choices=ROOM_TYPES)
     agent = models.ForeignKey(Agent, blank=True, null=True, on_delete=models.SET_NULL)
+    price = models.DecimalField(
+        max_digits=11, decimal_places=2, help_text="price in KSH",
+         default =None
+    )
 
     def __str__(self):
         return self.lodge + " " + self.room_no

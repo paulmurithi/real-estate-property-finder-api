@@ -19,7 +19,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email"]
+        # fields = ["id", "username", "email"]
+        fields = "__all__"
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -65,13 +66,13 @@ class LoginSerializer(serializers.Serializer):
         return user
 
 
-class AgentSerializer(serializers.HyperlinkedModelSerializer):
+class AgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
         fields = "__all__"
 
 
-class HouseSerializer(serializers.HyperlinkedModelSerializer):
+class HouseSerializer(serializers.ModelSerializer):
     # agent = AgentSerializer()
 
     class Meta:
@@ -98,9 +99,15 @@ class HouseSerializer(serializers.HyperlinkedModelSerializer):
                 "The number of showers cannot be less than zero"
             )
         return value
+    def validate_price(self, value):
+        if value < 0:
+            raise serializers.ValidationError(
+                "The price cannot be less than zero"
+            )
+        return value
 
 
-class LandSerializer(serializers.HyperlinkedModelSerializer):
+class LandSerializer(serializers.ModelSerializer):
     # agent = AgentSerializer()
 
     class Meta:
@@ -112,8 +119,15 @@ class LandSerializer(serializers.HyperlinkedModelSerializer):
             raise serializers.ValidationError("input cannot be less than zero")
         return value
 
+    def validate_price(self, value):
+        if value < 0:
+            raise serializers.ValidationError(
+                "The price cannot be less than zero"
+            )
+        return value
 
-class RoomSerializer(serializers.HyperlinkedModelSerializer):
+
+class RoomSerializer(serializers.ModelSerializer):
     # agent = AgentSerializer()
 
     class Meta:
@@ -134,8 +148,15 @@ class RoomSerializer(serializers.HyperlinkedModelSerializer):
             )
         return value
 
+    def validate_price(self, value):
+        if value < 0:
+            raise serializers.ValidationError(
+                "The price cannot be less than zero"
+            )
+        return value
 
-class CommercialLandSerializer(serializers.HyperlinkedModelSerializer):
+
+class CommercialLandSerializer(serializers.ModelSerializer):
     land = LandSerializer()
 
     class Meta:
@@ -148,7 +169,7 @@ class CommercialLandSerializer(serializers.HyperlinkedModelSerializer):
         return value
 
 
-class CommercialHouseSerializer(serializers.HyperlinkedModelSerializer):
+class CommercialHouseSerializer(serializers.ModelSerializer):
     # land = LandSerializer()
 
     class Meta:
@@ -161,13 +182,13 @@ class CommercialHouseSerializer(serializers.HyperlinkedModelSerializer):
         return value
 
 
-class CustomerSerializer(serializers.HyperlinkedModelSerializer):
+class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerContact
         fields = "__all__"
 
 
-class AmmenitySerializer(serializers.HyperlinkedModelSerializer):
+class AmmenitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Ammenity
         fields = "__all__"
@@ -178,19 +199,19 @@ class AmmenitySerializer(serializers.HyperlinkedModelSerializer):
         return value
 
 
-class HouseImageSerializer(serializers.HyperlinkedModelSerializer):
+class HouseImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = HouseImage
         fields = "__all__"
 
 
-class RoomImageSerializer(serializers.HyperlinkedModelSerializer):
+class RoomImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoomImage
         fields = "__all__"
 
 
-class LandImageSerializer(serializers.HyperlinkedModelSerializer):
+class LandImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = LandImage
         fields = "__all__"
