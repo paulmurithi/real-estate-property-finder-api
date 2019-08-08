@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
 
 # from django.contrib.auth.models import AbstractUser
 
@@ -147,16 +148,56 @@ class Ammenity(models.Model):
 
 
 class HouseImage(models.Model):
-    house = models.ForeignKey(House, blank=True, null=True, on_delete=models.CASCADE)
+    house = models.ForeignKey(House, blank=True, on_delete=models.CASCADE)
     image_url = models.FileField(upload_to="images/", unique=True)
 
 
 class RoomImage(models.Model):
-    Room = models.ForeignKey(Room, blank=True, null=True, on_delete=models.CASCADE)
+    Room = models.ForeignKey(Room, blank=True,  on_delete=models.CASCADE)
     image_url = models.FileField(upload_to="images/", unique=True)
 
 
 class LandImage(models.Model):
-    land = models.ForeignKey(Land, blank=True, null=True, on_delete=models.CASCADE)
+    land = models.ForeignKey(Land, blank=True,  on_delete=models.CASCADE)
     image_url = models.FileField(upload_to="images/", unique=True)
 
+class LandRequest(models.Model):
+    size = models.DecimalField(
+        max_digits=11, decimal_places=2, help_text="Please enter the size in hectares."
+    )
+    town = models.CharField(max_length=100)
+    suburb = models.CharField(max_length=100)
+    price = models.DecimalField(
+        max_digits=11, decimal_places=2, help_text="price in KSH",
+         default =None
+    )
+
+    def __str__(self):
+        return self.size
+
+class RoomRequest(models.Model):
+    ROOM_TYPES = (("Single", "single bed"), ("Double", "Double bed"))
+    town = models.CharField(max_length=20)
+    suburb = models.CharField(max_length=20)
+    room_type = models.CharField(max_length=10, choices=ROOM_TYPES)
+    price = models.DecimalField(
+        max_digits=11, decimal_places=2, help_text="price in KSH",
+         default =None
+    )
+
+    def __str__(self):
+        return self.room_type
+
+class HouseRequest(models.Model):
+    bedrooms = models.PositiveIntegerField()
+    sitting_rooms = models.PositiveIntegerField()
+    showers = models.PositiveIntegerField()
+    town = models.CharField(max_length=100)
+    suburb = models.CharField(max_length=100)
+    price = models.DecimalField(
+        max_digits=11, decimal_places=2, help_text="price in KSH",
+        default =None
+    )
+
+    def __str__(self):
+        return self.bedrooms+ "house"

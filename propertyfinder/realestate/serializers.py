@@ -5,9 +5,14 @@ from django.contrib.auth import authenticate
 from rest_framework import exceptions
 
 from .models import *
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group, Permission
 
 User = get_user_model()
+
+class UserPermissionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = "__all__"
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -17,53 +22,41 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        # fields = ["id", "username", "email"]
-        fields = "__all__"
+  class Meta:
+    model = User
+    fields = ('id', 'username', 'email', 'is_staff','groups')
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "username", "email", "password"]
-        extra_kwargs = {"password": {"write_only": True}}
+  class Meta:
+    model = User
+    fields = ('id', 'username', 'email', 'password')
+    extra_kwargs = {'password': {'write_only': True}}
 
-    def create(self, validated_data):
-        return User.objects.create_user(
-            validated_data["username"],
-            validated_data["email"],
-            validated_data["password"],
-        )
+  def create(self, validated_data):
+    groups = Group.objects.filter(name="Customers")
+    # groups_data = validated_data.get('groups')
+    # groups = []
+    # for group in groups_data:
+    #     belongTo = Group.objects.get(name=group)
+    #     groups.append(belongTo.id)
 
+    user = User.objects.create_user(validated_data['username'], validated_data['email'], validated_data['password'])
+    user.groups.set(groups)
+    # for group_data in groups_data:
+    #     # group = Group.objects.create(user=user, **group_data)
+    #     user.groups.add(group_data)
+    return user
 
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
+  username = serializers.CharField()
+  password = serializers.CharField()
 
-    def validate(self, data):
-        # user = authenticate(**data)
-        # if user and user.is_active:
-        #     return user
-        # raise serializers.ValidationError("invalid credentials.")
-        username = data.get("username", "")
-        password = data.get("password", "")
-        if username and password:
-            user = authenticate(**data)
-            if user:
-                if user.is_active:
-                    user = authenticate(**data)
-                else:
-                    raise exceptions.ValidationError("The user is deactivated.")
-            else:
-                raise exceptions.ValidationError(
-                    "Unable to login with given credentials."
-                )
-        else:
-            raise exceptions.ValidationError(
-                "Please provide both username and password."
-            )
-        return user
+  def validate(self, data):
+    user = authenticate(**data)
+    if user and user.is_active:
+      return user
+    raise serializers.ValidationError("Incorrect Credentials")
 
 
 class AgentSerializer(serializers.ModelSerializer):
@@ -214,4 +207,19 @@ class RoomImageSerializer(serializers.ModelSerializer):
 class LandImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = LandImage
+        fields = "__all__"
+
+class RoomRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoomRequest
+        fields = "__all__"
+
+class LandRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LandRequest
+        fields = "__all__"
+
+class HouseRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HouseRequest
         fields = "__all__"

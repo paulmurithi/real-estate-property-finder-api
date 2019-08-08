@@ -17,4 +17,6 @@ admin.site.register(CustomerContact)
 admin.site.register(HouseImage)
 admin.site.register(RoomImage)
 admin.site.register(LandImage)
-
+admin.site.register(RoomRequest)
+admin.site.register(LandRequest)
+admin.site.register(HouseRequest)

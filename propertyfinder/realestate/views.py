@@ -1,5 +1,7 @@
 # to be used fo custom viewsets
 from rest_framework.views import APIView
+from rest_framework.authentication import BasicAuthentication
+from .permissions import *
 
 from .models import (
     Agent,
@@ -15,6 +17,9 @@ from .models import (
     HouseImage,
     RoomImage,
     LandImage,
+    LandRequest,
+    RoomRequest,
+    HouseRequest
 )
 
 # rest imports
@@ -28,19 +33,23 @@ from rest_framework.permissions import (
     IsAdminUser,
     IsAuthenticatedOrReadOnly,
 )
-from rest_framework.authentication import (
-    TokenAuthentication,
-    BasicAuthentication,
-    SessionAuthentication,
-)
 from rest_framework.response import Response
 
 from knox.models import AuthToken
+from knox.auth import TokenAuthentication
 
 
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import login, logout
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
+
+
+# class Permissions(generics.GenericAPIView):
+#     serializer_class = serializers.UserPermissionsSerializer
+#     # permission_classes = [IsAuthenticated,]
+#     # authentication_classes = [TokenAuthentication,]
+#     # group__id = "2"
+#     queryset = get_group_permissions(user_obj, obj=None)
 
 
 class Register(generics.GenericAPIView):
@@ -50,21 +59,15 @@ class Register(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        return Response(
-            {
-                "user": serializers.UserSerializer(
-                    user, context=self.get_serializer_context()
-                ).data,
-                "token": AuthToken.objects.create(user),
-            }
-        )
+        return Response({
+        "user": serializers.UserSerializer(user, context=self.get_serializer_context()).data,
+        "token": AuthToken.objects.create(user)
+        })
 
 
 class ShowProfile(APIView):
     authentication_classes = [
-        SessionAuthentication,
         TokenAuthentication,
-        BasicAuthentication,
     ]
 
     permission_classes = [IsAuthenticated]
@@ -76,23 +79,21 @@ class ShowProfile(APIView):
 
 class Login_View(generics.GenericAPIView):
     serializer_class = serializers.LoginSerializer
+    authentication_classes = [BasicAuthentication]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data
-        return Response(
-            {
-                "user": serializers.UserSerializer(
-                    user, context=self.get_serializer_context()
-                ).data,
-                "token": AuthToken.objects.create(user),
-            }
-        )
+        return Response({
+        "user": serializers.UserSerializer(user, context=self.get_serializer_context()).data,
+        "token": AuthToken.objects.create(user)
+        })
 
 
 class User_View(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,]
+    authentication_classes = [TokenAuthentication,]
     serializer_class = serializers.UserSerializer
 
     def get_object(self):
@@ -100,7 +101,8 @@ class User_View(generics.RetrieveAPIView):
 
 
 class Logout_View(APIView):
-    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated,]
+    authentication_classes = [TokenAuthentication,]
 
     def post(self, request):
         logout(request)
@@ -298,7 +300,15 @@ class RoomViewSet(viewsets.ModelViewSet):
     queryset = Room.objects.all()
     serializer_class = serializers.RoomSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAgent, IsAuthenticatedOrReadOnly]
+
+    def check_permissions(self, request):
+        if request.method != "GET":
+            for permission in self.get_permissions():
+                if not permission.has_permission(request, self):
+                    self.permission_denied(
+                        request, message=getattr(permission, 'Cannot perfom the action request. Permisssion denied', None)
+                    )
 
 
 # class HouseForRentViewSet(viewsets.ModelViewSet):
@@ -351,20 +361,37 @@ class CommercialHouseViewSet(viewsets.ModelViewSet):
 class HouseImageViewSet(viewsets.ModelViewSet):
     queryset = HouseImage.objects.all()
     serializer_class = serializers.HouseImageSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    # authentication_classes = [TokenAuthentication]
+    # permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class RoomImageViewSet(viewsets.ModelViewSet):
     queryset = RoomImage.objects.all()
     serializer_class = serializers.RoomImageSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    # authentication_classes = [TokenAuthentication]
+    # permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class LandImageViewSet(viewsets.ModelViewSet):
     queryset = LandImage.objects.all()
     serializer_class = serializers.LandImageSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    # authentication_classes = [TokenAuthentication]
+    # permission_classes = [IsAuthenticatedOrReadOnly]
 
+class LandRequestViewSet(viewsets.ModelViewSet):
+    queryset = LandRequest.objects.all()
+    serializer_class = serializers.LandRequestSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+class RoomRequestViewSet(viewsets.ModelViewSet):
+    queryset = RoomRequest.objects.all()
+    serializer_class = serializers.RoomRequestSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+class HouseRequestViewSet(viewsets.ModelViewSet):
+    queryset = HouseRequest.objects.all()
+    serializer_class = serializers.HouseRequestSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
